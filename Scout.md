@@ -61,3 +61,94 @@ BLOCKING ISSUE:   <what is stopping progress, or "None">
 ```
 
 Copy these lines into the resolved tracker (named at run start, or generated from START_HERE.md when none was named) after every run.
+
+## Required Analysis Sections
+1. **Service & Exposure Scan** — medals, locations, dates that may trigger presumptives (verify current list; do not assume).
+2. **Evidence Tiering**
+   - Tier 1: Clinical fact (physician diagnosis, labs, imaging, C&P)
+   - Tier 2: Claimant assertion (flag ⚠️ CLARIFICATION NEEDED)
+   - Tier 3: Lay testimony (route to FACT section later)
+
+   **Finding vs. Attribution Rule:** A directly-observed finding from a primary record (imaging, diagnosis, lab result, C&P finding) and a causal claim that uses that finding to explain a *separate* symptom or condition are two distinct assertions and require two separate tiers, even when they appear in the same sentence or the same source document. The finding does not lend its confidence tier to the attribution.
+
+   Example: "Imaging shows lumbosacral degenerative arthritis" → Tier 1, Certain — radiologist/C&P reading. "The arthritis is what's causing the insomnia" → Theory, not Tier 1, even though it's about the same diagnosed condition — the causal link to a *different* symptom needs its own nexus evidence (see Missing Link Engine below) and does not inherit the diagnosis's certainty.
+
+   This distinction applies anywhere a diagnosis is used to explain something beyond itself: a documented condition ≠ proof that condition is the source of a specific pain, sleep disruption, functional loss, or other reported symptom.
+
+   **VA decisions and examiner opinions are opinions, not facts.** A rating decision's rationale and an examiner's nexus opinion sit at opinion-tier at best — lower if no basis is stated. They never outrank a contemporaneous objective record on a question of fact: a conceded diagnosis, a dated imaging finding, or a documented symptom is fact; the examiner's interpretation of what it means is opinion. A denial is one party's position. Tag accordingly and red-team it (Section 11).
+3. **Evidence Graph** — model the claim as a chain, not a flat list:
+   ```
+   SERVICE EVENT
+         │
+         ▼
+   IN-SERVICE CONDITION
+         │
+         ▼
+   CURRENT DIAGNOSIS
+         │
+         ├──────────────┐
+         ▼              ▼
+   CONTINUITY       FUNCTIONAL LOSS
+         │              │
+         └──────┬───────┘
+                ▼
+           MEDICAL OPINION
+                │
+                ▼
+           CLAIM THEORY
+   ```
+   Every arrow requires evidence. Output format:
+   ```
+   LINK:   [Service Event] → [In-Service Condition]
+   STATUS: Established / Unsupported / Not applicable
+   ```
+   One LINK/STATUS line per arrow. Never mark a link "Established" without a specific source — an untraceable link is "Unsupported," not omitted.
+4. **Missing Link Engine** — for the claim type, check every required link (not just guess what's missing):
+
+   | Claim Type | Required Links |
+   |---|---|
+   | Direct service connection | Current disability + In-service event/disease + Medical nexus |
+   | Secondary | Current disability + Service-connected condition + Causation OR aggravation |
+   | Increased rating | Already service connected + Current severity + Evidence matching rating criteria |
+   | TDIU | Service-connected disabilities + Functional limitations + Occupational impact + Employment facts |
+   | Presumptive | Current diagnosis + Qualifying service (location/dates/exposure) — nexus-free ONLY if the specific condition is currently on VA's presumptive list for that exposure; verify, do not assume |
+
+   Output per condition — every required link gets its own line, not just the missing ones:
+   ```
+   CLAIM TYPE: <type>
+   LINK:       <element name>
+   STATUS:     Established / Unsupported / Not applicable
+   CONFIDENCE: <1-5>  (1 = directly documented, near-certain; 5 = heavy inference — treat as provisional even if marked Established)
+   NOTES:      <what supports this status, or what would firm it up>
+
+   MISSING LINK(S): <list only the elements marked Unsupported>
+   ```
+   Never collapse this into a bare missing-link list — the per-element breakdown is what shows *why* something is flagged.
+5. **Rating-Criteria Mapping** — "The record documents X. The criteria require X + Y. Y is not established." Never predict a percentage.
+6. **Do Not Chase** — if no diagnosis, no provider support, unclear temporal relationship, and speculative mechanism: output STOP and do not develop further.
+7. **Medications** — classify any link as DOCUMENTED / PROVIDER-SUPPORTED / MEDICALLY PLAUSIBLE / POSSIBLE BUT UNSUPPORTED / SPECULATIVE. Only the first two are evidence.
+8. **Doctor Question** (non-leading only):
+   "Doctor, could you explain whether you believe there is a medical relationship between my [condition/medication] and [other condition/symptom]? If so, what is the medical reasoning…?"
+
+9. **Kinetic Chain Scan** — Check documented, diagnosed conditions against known causal/aggravation chains (examples: orthopedic condition → altered gait → secondary joint strain; chronic pain → prescribed NSAID/opioid → GI condition; service-connected physical condition → depression/anxiety; hearing loss ↔ tinnitus; diabetes → neuropathy/ED/retinopathy; respiratory condition → reduced exercise tolerance → cardiovascular strain). Only surface a chain if at least one end is already diagnosed in the record. Output per chain found:
+   ```
+   CHAIN:            <Condition A> → <Condition B> [→ <Condition C>]
+   BASIS:            <what's diagnosed/documented at each link, with source>
+   STATUS:           PATTERN MATCH ONLY — not a diagnosis, not a nexus
+   PYRAMIDING CHECK: <flag if A and B could be the same underlying disability under 38 CFR § 4.14>
+   ```
+   **Tracker Handoff:** For each chain found, write or update a Tracker row for the downstream condition — CLAIM STATE = UNEXPLORED or DISCOVERY, EVIDENCE STATE names the chain and basis, NEXT ACTION points to Build_Evidence.md Section 1 (PCP Secure Message) to develop the link.
+
+10. **TDIU / SMC Threshold Check** — Using only rated percentages and documented functional/work-limitation evidence already in the record, check:
+    - TDIU schedular threshold (38 CFR § 4.16(a)): one disability at 60%+, OR combined 70%+ with one at 40%+
+    - TDIU extraschedular/functional pathways (38 CFR § 4.16(b)): only flag if strong documented work-limitation evidence exists — do not speculate
+    - SMC indicators (38 U.S.C. § 1114): loss of use, aid and attendance need, housebound status — only if directly documented
+    Output: MET / CLOSE (state exact gap) / NOT MET, with the specific ratings or documentation that produced the result.
+    **Tracker Handoff:** Update the Blocking Issue field on the relevant condition rows (or a summary "TDIU/SMC" row) with the threshold status and what specific evidence would close any gap. Never write a predicted award amount or likelihood.
+
+11. **Red Team Phrase Scan** — Scan all uploaded records for language a VA rater could use against the claim: "resolved," "asymptomatic," "normal," "improving," "well-controlled," "stable," "no acute distress," "within normal limits," "patient denies," "not service-connected," "less than likely," "no nexus established," "no objective findings," and any condition with no documented treatment for 2+ years. Output per flag:
+    ```
+    QUOTE:      "<exact phrase>"
+    SOURCE:     <document + date>
+    CONDITION:  <which claim this affects>
+    ```
