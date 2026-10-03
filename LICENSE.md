@@ -1,13 +1,21 @@
-# License
+MIT License
 
-VA Claim Scout is free and open source.
+Copyright (c) 2026 William Joseph Barrett
 
-You are free to use, copy, modify, share, and build on this framework for any purpose — personal, educational, or organizational — at no cost. No subscription. No paywall. Ever.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-**One condition:** If you use or adapt this framework, please include a reference to the original GitHub repository so others can find it.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-> github.com/ClaimScout/VA-Claim-Scout
-
----
-
-This project is provided as-is, without warranty of any kind. It is not legal advice. The authors are not liable for decisions made based on output produced by this framework. Always consult a VSO, accredited claims agent, or VA-accredited attorney before making decisions about your claim.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
