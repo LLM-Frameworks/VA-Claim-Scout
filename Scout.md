@@ -61,5 +61,3 @@ BLOCKING ISSUE:   <what is stopping progress, or "None">
 ```
 
 Copy these lines into the resolved tracker (named at run start, or generated from START_HERE.md when none was named) after every run.
-
-SEE REPO FOR FULL SCOUT.md CONTENT - PLACEHOLDER IF TRUNCATED
