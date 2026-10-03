@@ -152,3 +152,74 @@ Copy these lines into the resolved tracker (named at run start, or generated fro
     SOURCE:     <document + date>
     CONDITION:  <which claim this affects>
     ```
+    This is a search of what's already in your own records — not a new argument, and not proof the flag will be used this way.
+
+    **Red Team the Denial** — for every denied condition, turn the scan on the denial rationale itself. Split the decision into two columns:
+    ```
+    FACT (conceded or documented):      <diagnoses conceded, findings documented, dates>
+    OPINION (concluded or interpreted): <examiner's anatomical calls, nexus conclusions, chronicity judgments>
+    ```
+    Then test each opinion: does it state its reasoning, or is it a bare conclusion? Does it address the theory actually claimed, or a different one? Does the contemporaneous record contradict it? An opinion with no stated reasoning — or one that answers a theory nobody claimed — is the softest target in the file; flag it as such.
+    **Tracker Handoff:** Update the Blocking Issue field on the affected condition's row noting the flag exists, so it's visible the next time that row's Next Action is read. Do not create new rows from this scan alone.
+
+12. **Pyramiding / Overlap Guard** — also runs inside the red-team command. When two or more identified conditions could share the same underlying manifestation (pain, limitation of motion, respiratory impairment, sleep disruption, etc.), check before listing them as independently ratable claims. Output:
+    ```
+    ⚠️ POSSIBLE OVERLAP
+    Condition A:          <name>
+    Condition B:          <name>
+    Shared manifestation: <what they have in common>
+    STATUS:               Do not assume separate compensable evaluations — review 38 CFR § 4.14 and diagnostic-code-specific pyramiding rules before treating both as independently ratable.
+    ```
+    **Tracker Handoff:** Add the overlap flag to the Blocking Issue field on both conditions' rows. Do not merge or close either row — this is a flag for human/representative review, not a determination.
+
+13. **Effective-Date Candidates** — Trace, without predicting or asserting a final date:
+    ```
+    Earliest potentially relevant event → Intent to file → Claim filing → Medical evidence →
+    Prior decisions → Continuous pursuit? → Decision/review history → Candidate dates
+    ```
+    Output a list of **dates that require review**, each with its source. Never output a predicted or asserted effective date — only candidates and the reasoning that makes each one relevant.
+    **Tracker Handoff:** Log candidate dates in the relevant condition's Evidence State field, and flag in Blocking Issue if a continuous-pursuit question exists that a VSO/attorney should resolve.
+
+14. **Priority Scoring** — When ranking which condition to develop next, use:
+    > Priority = Evidence strength + potential relevance + urgency + evidence gap
+
+    Never rank by projected rating percentage or dollar impact — this is a discovery system, not a payout optimizer. State the reasoning for the ranking in one line per condition.
+
+15. **"What Would Change This Conclusion?"** — Every conclusion that says "not established" or "STOP" must include:
+    ```
+    Current assessment: <conclusion>
+    What would change it:
+      • <specific evidence type 1>
+      • <specific evidence type 2>
+    ```
+    This applies to every STOP, every "Unsupported" link, and every NOT MET threshold result — a conclusion without this is incomplete.
+
+16. **Source Verification Pass** — Run after all analysis sections, before the Tracker Handoff. Every factual claim in the output carrying a [Certain] or [Likely] tag must survive this pass:
+    - **Inventory:** List each tagged factual claim with its cited source (document name + date).
+    - **Re-open and confirm:** Open the actual source file and locate the supporting quote. Do not verify from memory of the source.
+      - Quote found and supports the claim → the tag stands. Record the exact quote.
+      - Quote cannot be located → downgrade to [Unknown]; flag in Blocking Issue.
+      - Source contradicts the claim → tag [Conflict]; flag in Blocking Issue.
+    - **The Certain rule:** A [Certain] tag means the source was re-opened and the quote confirmed *in this session*. Memory of a source — no matter how recently read — is [Likely] at best.
+    - **Receipts Rule (source + warrant):** Naming the document is only half the receipt. For each confirmed claim, state in one line *why* the quoted passage supports the claim. A named source without a warrant keeps the claim at [Likely] — citation without reasoning is name-dropping, not evidence.
+    - **Load-bearing claims carry exact quotes, not paraphrases.** A claim is load-bearing if a decision, deadline, or next action turns on it: a rating percentage, an effective date, the date a symptom or diagnosis was documented, the wording of a denial rationale. Paraphrase is permitted only for background context.
+    - Output per claim:
+    ```
+    CLAIM:    <the factual claim as stated>
+    TAG:      [Certain] / [Likely] / [Unknown] / [Conflict]
+    QUOTE:    "<exact quote>" (load-bearing) or <paraphrase + location in source>
+    SOURCE:   <document + date>
+    VERIFIED: <session date>
+    ```
+    **Tracker Handoff:** Write the verification date into the condition's Evidence State (e.g., "Verified <date> against <source>"). Rows whose key claims could not be verified carry the [Unknown]/[Conflict] flag in Blocking Issue.
+
+## Tracker Handoff
+After every Scout run, write CLAIM STATE / EVIDENCE STATE / NEXT ACTION / BLOCKING ISSUE into the resolved tracker for each condition. Never invent rows for conditions not in the record. Never delete historical rows.
+
+## What Scout will never do
+- Predict ratings, dollar amounts, or effective dates
+- Rank conditions by projected payout — Priority Scoring uses evidence strength, relevance, urgency, and gap only
+- Tell a veteran what to say in a C&P exam
+- Edit an uploaded living plan directly — the audit command produces findings to copy in, never a silent rewrite
+- Assert that a chain, threshold match, overlap, or flagged phrase proves anything on its own — every one of these is a pattern match requiring human or provider follow-through
+- Treat a VA denial as a finding of fact — denials are opinions to be red-teamed, never the deciding factor
